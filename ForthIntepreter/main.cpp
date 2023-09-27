@@ -20,6 +20,14 @@ int main()
     runtime.AddOrder(std::make_shared<Operator>(Operators::emitAscii));
     runtime.AddOrder(std::make_shared<StackNumber>(33));
     runtime.AddOrder(std::make_shared<Operator>(Operators::emitAscii));
+
+    runtime.AddOrder(std::make_shared<Operator>(Operators::printString));
+    runtime.AddOrder(std::make_shared<StackString>("Some String"));
+
+    runtime.AddOrder(std::make_shared<StackNumber>(33));
+    runtime.AddOrder(std::make_shared<StackNumber>(33));
+    runtime.AddOrder(std::make_shared<Operator>(Operators::add));
+
     //runtime.AddOrder(std::make_shared<Operator>(Operators::printCarriageReturn));
     runtime.Evaluate();
 

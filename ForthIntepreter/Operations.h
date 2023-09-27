@@ -69,6 +69,7 @@ struct Operations
 	static std::vector<StackNumber> PrintStackNumber(std::vector<StackNumber>& nodes, Runtime& runtime);
 	static std::vector<StackNumber> PrintAscii(std::vector<StackNumber>& nodes, Runtime& runtime);
 	static std::vector<StackNumber> PrintCarriageReturn(std::vector<StackNumber>& nodes, Runtime& runtime);
+	static std::vector<StackNumber> PrintString(StackString string, Runtime& runtime);
 };
 
 class Operators
@@ -99,4 +100,5 @@ public:
 	const static inline Operation printVariable = Operation(1, 0, Operations::PrintStackNumber,false);
 	const static inline Operation emitAscii = Operation(1, 0, Operations::PrintAscii,false);
 	const static inline Operation printCarriageReturn = Operation(0, 0, Operations::PrintCarriageReturn,false);
+	const static inline Operation printString = Operation(0, 0, Operations::PrintString, true);
 };

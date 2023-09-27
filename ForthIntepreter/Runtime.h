@@ -12,9 +12,9 @@ struct StackVariable : Node
 	bool isString = false;
 };
 
-struct StackString : public StackVariable
+struct StackString : public Node
 {
-	explicit StackString(std::string _string) : string(_string) { isString = true; }
+	explicit StackString(std::string _string) : string(_string) {}
 	std::string string;
 };
 
@@ -42,11 +42,18 @@ struct Operation
 	size_t numberOfInput;
 	size_t numberOfOutput;
 	std::function<std::vector<StackNumber> (std::vector<StackNumber>&, Runtime& runtime)> function;
+	std::function<std::vector<StackNumber> (StackString, Runtime& runtime)> stringFunction;
 	bool string;
 
-
+	//normal operation
 	Operation(const size_t& numberOfInput, const size_t& numberOfOutput, const std::function<std::vector<StackNumber>(std::vector<StackNumber>&, Runtime& runtime)>& function, bool string)
 		: numberOfInput(numberOfInput), numberOfOutput(numberOfOutput), function(function), string(string)
+	{
+	}
+
+	//for compatibility with strings
+	Operation(const size_t& numberOfInput, const size_t& numberOfOutput, const std::function<std::vector<StackNumber>(StackString, Runtime& runtime)>& stringFunction, bool string)
+		: numberOfInput(numberOfInput), numberOfOutput(numberOfOutput), stringFunction(stringFunction), string(string)
 	{
 	}
 };

@@ -27,3 +27,10 @@ inline std::vector<StackNumber> Operations::PrintCarriageReturn(std::vector<Stac
 	runtime.userInterface->PrintCarriageReturn();
 	return std::vector<StackNumber>({});
 }
+
+std::vector<StackNumber> Operations::PrintString(StackString string, Runtime& runtime)
+{
+	assert(runtime.userInterface.get());
+	runtime.userInterface->PrintString(string.string);
+	return std::vector<StackNumber>();
+}

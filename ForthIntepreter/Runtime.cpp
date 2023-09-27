@@ -21,22 +21,48 @@ void Runtime::Evaluate()
 				throw std::exception("Stack Underflow");
 			}
 			std::vector<StackNumber> variables;
-			for (size_t j = 0; j < op->op.numberOfInput; j++)
+			std::vector<StackNumber> returnValues;
+			if (!op->op.string)
 			{
-				variables.push_back(stack.top());
+				for (size_t j = 0; j < op->op.numberOfInput; j++)
+				{
+					variables.push_back(stack.top());
 
-				stack.pop();
+					stack.pop();
+				}
+				returnValues = op->op.function(variables, *this);
 			}
-			auto returnValues = op->op.function(variables,*this);
+			else
+			{
+				//check the next order exists which includes a string
+				assert(orders.size() >= i + 2);
+				if (auto string = std::dynamic_pointer_cast<StackString>(orders[i+1]))
+				{
+					returnValues = op->op.stringFunction(*string, *this);
+					//skip string order
+					i++;
+				}
+				else
+				{
+					throw std::exception("Couldn't find a string");
+				}
+			}
+
 
 			for (auto const& returnValue : returnValues)
 			{
 				stack.push(returnValue);
 			}
+			break;
 		}
 		if (auto var = std::dynamic_pointer_cast<StackNumber>(node))
 		{
 			stack.push(*var.get());
+			break;
+		}
+		if (auto var = std::dynamic_pointer_cast<StackString>(node))
+		{
+			assert(false);
 		}
 		
 	}
