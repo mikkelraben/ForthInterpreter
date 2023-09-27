@@ -20,7 +20,7 @@ void Runtime::Evaluate()
 			{
 				throw std::exception("Stack Underflow");
 			}
-			std::vector<std::shared_ptr<StackVariable>> variables;
+			std::vector<StackNumber> variables;
 			for (size_t j = 0; j < op->op.numberOfInput; j++)
 			{
 				variables.push_back(stack.top());
@@ -36,11 +36,7 @@ void Runtime::Evaluate()
 		}
 		if (auto var = std::dynamic_pointer_cast<StackNumber>(node))
 		{
-			stack.push(var);
-		}
-		if (auto string = std::dynamic_pointer_cast<StackString>(node))
-		{
-			stack.push(string);
+			stack.push(*var.get());
 		}
 		
 	}
