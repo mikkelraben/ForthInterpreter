@@ -2,9 +2,18 @@
 #include "standardLibraries.h"
 #include <cassert>
 
+enum class OperationType
+{
+	normal,
+	printString,
+	string,
+	Then,
+};
+
 struct Node
 {
 	virtual ~Node() {};
+	OperationType special;
 };
 
 struct StackVariable : Node
@@ -14,13 +23,19 @@ struct StackVariable : Node
 
 struct StackString : public Node
 {
-	explicit StackString(std::string _string) : string(_string) {}
+	explicit StackString(std::string _string) : string(_string)
+	{
+		special = OperationType::normal;
+	}
 	std::string string;
 };
 
 struct StackNumber : public StackVariable
 {
-	explicit StackNumber(int _variable) : variable(_variable) {}
+	explicit StackNumber(int _variable) : variable(_variable) 
+	{
+		special = OperationType::normal;
+	}
 	int variable;
 };
 
@@ -34,8 +49,11 @@ public:
 	std::stack<StackNumber> stack;
 	std::shared_ptr<UserInterface> userInterface;
 	std::vector<std::shared_ptr<Node>> orders;
+	size_t currentOrder;
 	void Evaluate();
 };
+
+
 
 struct Operation
 {
@@ -43,24 +61,25 @@ struct Operation
 	size_t numberOfOutput;
 	std::function<std::vector<StackNumber> (std::vector<StackNumber>&, Runtime& runtime)> function;
 	std::function<std::vector<StackNumber> (StackString, Runtime& runtime)> stringFunction;
-	bool string;
+	OperationType special;
+	bool insideDefinition = false;
 
 	//normal operation
-	Operation(const size_t& numberOfInput, const size_t& numberOfOutput, const std::function<std::vector<StackNumber>(std::vector<StackNumber>&, Runtime& runtime)>& function, bool string)
-		: numberOfInput(numberOfInput), numberOfOutput(numberOfOutput), function(function), string(string)
+	Operation(const size_t& numberOfInput, const size_t& numberOfOutput, const std::function<std::vector<StackNumber>(std::vector<StackNumber>&, Runtime& runtime)>& function, OperationType special)
+		: numberOfInput(numberOfInput), numberOfOutput(numberOfOutput), function(function), special(special)
 	{
 	}
 
 	//for compatibility with strings
-	Operation(const size_t& numberOfInput, const size_t& numberOfOutput, const std::function<std::vector<StackNumber>(StackString, Runtime& runtime)>& stringFunction, bool string)
-		: numberOfInput(numberOfInput), numberOfOutput(numberOfOutput), stringFunction(stringFunction), string(string)
+	Operation(const size_t& numberOfInput, const size_t& numberOfOutput, const std::function<std::vector<StackNumber>(StackString, Runtime& runtime)>& stringFunction, OperationType special)
+		: numberOfInput(numberOfInput), numberOfOutput(numberOfOutput), stringFunction(stringFunction), special(special)
 	{
 	}
 };
 
 struct Operator : Node
 {
-	explicit Operator(Operation _operator) : op(_operator) {}
+	explicit Operator(Operation _operator) : op(_operator) { special = op.special; }
 	Operation op;
 };
 

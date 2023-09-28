@@ -37,6 +37,48 @@ struct Operations
 	}
 
 	//Boolean Logic
+	static std::vector<StackNumber> Equal(std::vector<StackNumber>& nodes, Runtime& runtime)
+	{
+		assert(nodes.size() == 2);
+
+		auto variable = StackNumber(nodes[1].variable == nodes[0].variable ? -1 : 0);
+		return std::vector<StackNumber>({ variable });
+	}
+	static std::vector<StackNumber> LessThan(std::vector<StackNumber>& nodes, Runtime& runtime)
+	{
+		assert(nodes.size() == 2);
+
+		auto variable = StackNumber(nodes[1].variable < nodes[0].variable ? -1 : 0);
+		return std::vector<StackNumber>({ variable });
+	}
+	static std::vector<StackNumber> LargerThan(std::vector<StackNumber>& nodes, Runtime& runtime)
+	{
+		assert(nodes.size() == 2);
+
+		auto variable = StackNumber(nodes[1].variable > nodes[0].variable ? -1 : 0);
+		return std::vector<StackNumber>({ variable });
+	}
+	static std::vector<StackNumber> And(std::vector<StackNumber>& nodes, Runtime& runtime)
+	{
+		assert(nodes.size() == 2);
+
+		auto variable = StackNumber(nodes[1].variable && nodes[0].variable ? -1 : 0);
+		return std::vector<StackNumber>({ variable });
+	}
+	static std::vector<StackNumber> Or(std::vector<StackNumber>& nodes, Runtime& runtime)
+	{
+		assert(nodes.size() == 2);
+
+		auto variable = StackNumber(nodes[1].variable || nodes[0].variable ? -1 : 0);
+		return std::vector<StackNumber>({ variable });
+	}
+	static std::vector<StackNumber> Not(std::vector<StackNumber>& nodes, Runtime& runtime)
+	{
+		assert(nodes.size() == 1);
+
+		auto variable = StackNumber(!nodes[0].variable ? -1 : 0);
+		return std::vector<StackNumber>({ variable });
+	}
 
 	//Stack Manipulation
 	static std::vector<StackNumber> Duplicate(std::vector<StackNumber>& nodes, Runtime& runtime)
@@ -70,35 +112,43 @@ struct Operations
 	static std::vector<StackNumber> PrintAscii(std::vector<StackNumber>& nodes, Runtime& runtime);
 	static std::vector<StackNumber> PrintCarriageReturn(std::vector<StackNumber>& nodes, Runtime& runtime);
 	static std::vector<StackNumber> PrintString(StackString string, Runtime& runtime);
+
+	//Conditional Operations
+	static std::vector<StackNumber> If(std::vector<StackNumber>& nodes, Runtime& runtime);
+	static std::vector<StackNumber> Then(std::vector<StackNumber>& nodes, Runtime& runtime);
 };
 
 class Operators
 {
 public:
 	//Basic Arithmetic
-	const static inline Operation add = Operation(2, 1, Operations::Add,false);
-	const static inline Operation subtract = Operation(2, 1, Operations::Subtract,false);
-	const static inline Operation multiply = Operation(2, 1, Operations::Multiply,false);
-	const static inline Operation divide = Operation(2, 1, Operations::Divide,false);	
+	const static inline Operation add = Operation(2, 1, Operations::Add,OperationType::normal);
+	const static inline Operation subtract = Operation(2, 1, Operations::Subtract,OperationType::normal);
+	const static inline Operation multiply = Operation(2, 1, Operations::Multiply,OperationType::normal);
+	const static inline Operation divide = Operation(2, 1, Operations::Divide,OperationType::normal);
 	
 	//Boolean Logic
-	//static Operation equal = Operation(1,1,);
-	//static Operation lessThan = Operation(1,1,);
-	//static Operation largerThan = Operation(1,1,);
-	//static Operation And = Operation(1,1,);
-	//static Operation Or = Operation(1,1,);
-	//static Operation Not = Operation(1,1,);
+	const static inline Operation equal = Operation(2,1, Operations::Equal,OperationType::normal);
+	const static inline Operation lessThan = Operation(2,1, Operations::LessThan,OperationType::normal);
+	const static inline Operation largerThan = Operation(2,1, Operations::LargerThan,OperationType::normal);
+	const static inline Operation And = Operation(2,1, Operations::And,OperationType::normal);
+	const static inline Operation Or = Operation(2,1, Operations::Or,OperationType::normal);
+	const static inline Operation Not = Operation(1,1, Operations::Not,OperationType::normal);
 
 	//Stack Manipulation
 
-	const static inline Operation duplicate = Operation(1, 2, Operations::Duplicate,false);
-	const static inline Operation drop = Operation(1, 0, Operations::Drop,false);
-	const static inline Operation swap = Operation(2, 2, Operations::Swap,false);
-	const static inline Operation over = Operation(2, 3, Operations::Over,false);
-	const static inline Operation rotate = Operation(3, 3, Operations::Rotate,false);
+	const static inline Operation duplicate = Operation(1, 2, Operations::Duplicate,OperationType::normal);
+	const static inline Operation drop = Operation(1, 0, Operations::Drop,OperationType::normal);
+	const static inline Operation swap = Operation(2, 2, Operations::Swap,OperationType::normal);
+	const static inline Operation over = Operation(2, 3, Operations::Over,OperationType::normal);
+	const static inline Operation rotate = Operation(3, 3, Operations::Rotate,OperationType::normal);
 
-	const static inline Operation printVariable = Operation(1, 0, Operations::PrintStackNumber,false);
-	const static inline Operation emitAscii = Operation(1, 0, Operations::PrintAscii,false);
-	const static inline Operation printCarriageReturn = Operation(0, 0, Operations::PrintCarriageReturn,false);
-	const static inline Operation printString = Operation(0, 0, Operations::PrintString, true);
+	const static inline Operation printVariable = Operation(1, 0, Operations::PrintStackNumber,OperationType::normal);
+	const static inline Operation emitAscii = Operation(1, 0, Operations::PrintAscii,OperationType::normal);
+	const static inline Operation printCarriageReturn = Operation(0, 0, Operations::PrintCarriageReturn,OperationType::normal);
+	const static inline Operation printString = Operation(0, 0, Operations::PrintString, OperationType::printString);
+
+	//Conditional Operations
+	const static inline Operation If = Operation(1, 0, Operations::If, OperationType::normal);
+	const static inline Operation Then = Operation(0, 0, Operations::Then, OperationType::Then);
 };

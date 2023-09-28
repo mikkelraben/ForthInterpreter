@@ -9,27 +9,27 @@ int main()
     auto runtime = Runtime();
     runtime.userInterface = ui;
 
-    runtime.AddOrder(std::make_shared<StackNumber>(78));
-    runtime.AddOrder(std::make_shared<StackNumber>(9));
-    runtime.AddOrder(std::make_shared<Operator>(Operators::add));
-    runtime.AddOrder(std::make_shared<Operator>(Operators::emitAscii));
-    runtime.AddOrder(std::make_shared<StackNumber>(111));
-    runtime.AddOrder(std::make_shared<Operator>(Operators::emitAscii));
+    runtime.AddOrder(std::make_shared<StackNumber>(4));
+    runtime.AddOrder(std::make_shared<StackNumber>(5));
     runtime.Evaluate();
-    runtime.AddOrder(std::make_shared<StackNumber>(119));
-    runtime.AddOrder(std::make_shared<Operator>(Operators::emitAscii));
-    runtime.AddOrder(std::make_shared<StackNumber>(33));
-    runtime.AddOrder(std::make_shared<Operator>(Operators::emitAscii));
-
+    ui->PrintStack(runtime.stack);
+    runtime.AddOrder(std::make_shared<Operator>(Operators::lessThan));
+    runtime.AddOrder(std::make_shared<Operator>(Operators::duplicate));
+    runtime.AddOrder(std::make_shared<Operator>(Operators::If));
     runtime.AddOrder(std::make_shared<Operator>(Operators::printString));
-    runtime.AddOrder(std::make_shared<StackString>("Some String"));
+    runtime.AddOrder(std::make_shared<StackString>("True"));
+    runtime.AddOrder(std::make_shared<Operator>(Operators::Then));
 
-    runtime.AddOrder(std::make_shared<StackNumber>(33));
-    runtime.AddOrder(std::make_shared<StackNumber>(33));
-    runtime.AddOrder(std::make_shared<Operator>(Operators::add));
+    runtime.AddOrder(std::make_shared<Operator>(Operators::Not));
 
-    //runtime.AddOrder(std::make_shared<Operator>(Operators::printCarriageReturn));
+    runtime.AddOrder(std::make_shared<Operator>(Operators::If));
+    runtime.AddOrder(std::make_shared<Operator>(Operators::printString));
+    runtime.AddOrder(std::make_shared<StackString>("False"));
+    runtime.AddOrder(std::make_shared<Operator>(Operators::Then));
+
+    
     runtime.Evaluate();
+    //runtime.AddOrder(std::make_shared<Operator>(Operators::printCarriageReturn));
 
     ui->PrintStack(runtime.stack);
 }

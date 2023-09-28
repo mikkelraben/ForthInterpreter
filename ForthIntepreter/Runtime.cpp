@@ -11,9 +11,9 @@ void Runtime::AddOrder(std::shared_ptr<Node> node)
 
 void Runtime::Evaluate()
 {
-	for (size_t i = 0; i < orders.size(); i++)
+	for (currentOrder = 0; currentOrder < orders.size(); currentOrder++)
 	{
-		auto node = orders[i];
+		auto node = orders[currentOrder];
 		if (auto op = std::dynamic_pointer_cast<Operator>(node))
 		{
 			if (stack.size() < op->op.numberOfInput)
@@ -22,7 +22,7 @@ void Runtime::Evaluate()
 			}
 			std::vector<StackNumber> variables;
 			std::vector<StackNumber> returnValues;
-			if (!op->op.string)
+			if (op->op.special != OperationType::printString)
 			{
 				for (size_t j = 0; j < op->op.numberOfInput; j++)
 				{
@@ -35,12 +35,12 @@ void Runtime::Evaluate()
 			else
 			{
 				//check the next order exists which includes a string
-				assert(orders.size() >= i + 2);
-				if (auto string = std::dynamic_pointer_cast<StackString>(orders[i+1]))
+				assert(orders.size() >= currentOrder + 2);
+				if (auto string = std::dynamic_pointer_cast<StackString>(orders[currentOrder+1]))
 				{
 					returnValues = op->op.stringFunction(*string, *this);
 					//skip string order
-					i++;
+					currentOrder++;
 				}
 				else
 				{
@@ -48,17 +48,16 @@ void Runtime::Evaluate()
 				}
 			}
 
-
 			for (auto const& returnValue : returnValues)
 			{
 				stack.push(returnValue);
 			}
-			break;
+			continue;
 		}
 		if (auto var = std::dynamic_pointer_cast<StackNumber>(node))
 		{
 			stack.push(*var.get());
-			break;
+			continue;
 		}
 		if (auto var = std::dynamic_pointer_cast<StackString>(node))
 		{

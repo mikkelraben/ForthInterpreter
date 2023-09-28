@@ -1,1 +1,1 @@
-//#TODO add tests for all arithmetic operators and basic stack manipulation
+//#TODO add tests for all arithmetic operators, boolean operators and basic stack manipulation
