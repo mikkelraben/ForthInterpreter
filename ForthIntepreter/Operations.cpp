@@ -48,8 +48,14 @@ std::vector<StackNumber> Operations::If(std::vector<StackNumber>& nodes, Runtime
 		}
 	}
 
+
+	if (thenLocation == 0)
+	{
+		throw std::exception("Could not find a Then for an if statement");
+	}
+
 	size_t elseLocation = 0;
-	for (size_t i = runtime.currentOrder; i < runtime.orders.size(); i++)
+	for (size_t i = runtime.currentOrder; i < thenLocation; i++)
 	{
 		if (runtime.orders[i]->special == OperationType::Else)
 		{
@@ -58,16 +64,11 @@ std::vector<StackNumber> Operations::If(std::vector<StackNumber>& nodes, Runtime
 		}
 	}
 
-	if (thenLocation == 0)
-	{
-		throw std::exception("Could not find a Then for an if statement");
-	}
-
 
 	//if the if statement evaluates false then skip all orders until end
 	if (!nodes[0].variable)
 	{
-		if (elseLocation < thenLocation && elseLocation != 0)
+		if (elseLocation != 0)
 		{
 			runtime.currentOrder = elseLocation;
 		}
