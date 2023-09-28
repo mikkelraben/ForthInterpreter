@@ -7,7 +7,9 @@ enum class OperationType
 	normal,
 	printString,
 	string,
+	If,
 	Then,
+	Else,
 };
 
 struct Node
@@ -79,7 +81,7 @@ struct Operation
 
 struct Operator : Node
 {
-	explicit Operator(Operation _operator) : op(_operator) { special = op.special; }
+	explicit Operator(const Operation& _operator) : op(_operator) { special = op.special; }
 	Operation op;
 };
 

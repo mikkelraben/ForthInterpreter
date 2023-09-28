@@ -38,24 +38,43 @@ std::vector<StackNumber> Operations::PrintString(StackString string, Runtime& ru
 //Conditional Operations
 std::vector<StackNumber> Operations::If(std::vector<StackNumber>& nodes, Runtime& runtime)
 {
+	size_t thenLocation = 0;
+	for (size_t i = runtime.currentOrder; i < runtime.orders.size(); i++)
+	{
+		if (runtime.orders[i]->special == OperationType::Then)
+		{
+			thenLocation = i;
+			break;
+		}
+	}
+
+	size_t elseLocation = 0;
+	for (size_t i = runtime.currentOrder; i < runtime.orders.size(); i++)
+	{
+		if (runtime.orders[i]->special == OperationType::Else)
+		{
+			elseLocation = i;
+			break;
+		}
+	}
+
+	if (thenLocation == 0)
+	{
+		throw std::exception("Could not find a Then for an if statement");
+	}
+
+
 	//if the if statement evaluates false then skip all orders until end
 	if (!nodes[0].variable)
 	{
-		size_t thenLocation = 0;
-		for (size_t i = runtime.currentOrder; i < runtime.orders.size(); i++)
+		if (elseLocation < thenLocation && elseLocation != 0)
 		{
-			if (runtime.orders[i]->special == OperationType::Then)
-			{
-				thenLocation = i;
-				break;
-			}
+			runtime.currentOrder = elseLocation;
 		}
-		if (thenLocation == 0)
+		else
 		{
-			throw std::exception("Could not find a Then for an if statement");
+			runtime.currentOrder = thenLocation;
 		}
-
-		runtime.currentOrder = thenLocation;
 	}
 
 	return std::vector<StackNumber>();
@@ -65,3 +84,46 @@ std::vector<StackNumber> Operations::Then(std::vector<StackNumber>& nodes, Runti
 {
 	return std::vector<StackNumber>();
 }
+
+std::vector<StackNumber> Operations::Else(std::vector<StackNumber>& nodes, Runtime& runtime)
+{
+	//check if inside if statement
+	//find the next then and goto
+	size_t ifLocation = -1;
+	for (size_t i = runtime.currentOrder; i != 0; i--)
+	{
+		if (runtime.orders[i]->special == OperationType::If)
+		{
+			ifLocation = i;
+			break;
+		}
+		if (runtime.orders[i]->special == OperationType::Then)
+		{
+			ifLocation = -1;
+			break;
+		}
+	}
+	if (ifLocation == -1)
+	{
+		throw std::exception("Else statement outside an if statement");
+	}
+
+	size_t thenLocation = 0;
+	for (size_t i = runtime.currentOrder; i < runtime.orders.size(); i++)
+	{
+		if (runtime.orders[i]->special == OperationType::Then)
+		{
+			thenLocation = i;
+			break;
+		}
+	}
+
+	if (thenLocation == 0)
+	{
+		throw std::exception("Could not find a Then for an if statement");
+	}
+	runtime.currentOrder = thenLocation;
+
+	return std::vector<StackNumber>();
+}
+

@@ -116,6 +116,7 @@ struct Operations
 	//Conditional Operations
 	static std::vector<StackNumber> If(std::vector<StackNumber>& nodes, Runtime& runtime);
 	static std::vector<StackNumber> Then(std::vector<StackNumber>& nodes, Runtime& runtime);
+	static std::vector<StackNumber> Else(std::vector<StackNumber>& nodes, Runtime& runtime);
 };
 
 class Operators
@@ -149,6 +150,7 @@ public:
 	const static inline Operation printString = Operation(0, 0, Operations::PrintString, OperationType::printString);
 
 	//Conditional Operations
-	const static inline Operation If = Operation(1, 0, Operations::If, OperationType::normal);
+	const static inline Operation If = Operation(1, 0, Operations::If, OperationType::If);
 	const static inline Operation Then = Operation(0, 0, Operations::Then, OperationType::Then);
+	const static inline Operation Else = Operation(0, 0, Operations::Else, OperationType::Else);
 };
