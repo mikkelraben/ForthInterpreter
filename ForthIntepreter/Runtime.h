@@ -10,12 +10,33 @@ enum class OperationType
 	If,
 	Then,
 	Else,
+	Do,
+	Loop,
+	I,
+	While,
+	Repeat,
+};
+
+
+// I could use a union but it is considered bad practice
+// should be replaced with some polymorphic thing
+struct ExtraInfo
+{
+	size_t stringLocation = -1;
+	size_t startLocation = -1;
+	size_t endLocation = -1;
+	size_t elseLocation = -1;
+	int loopStartingValue = 0;
+	int loopEndValue = 0;
+	int loopIteration = 0;
 };
 
 struct Node
 {
 	virtual ~Node() {};
 	OperationType special;
+	std::shared_ptr<ExtraInfo> info;
+	bool validated = false;
 };
 
 struct StackVariable : Node
@@ -23,11 +44,12 @@ struct StackVariable : Node
 	bool isString = false;
 };
 
-struct StackString : public Node
+struct StackString : public StackVariable
 {
-	explicit StackString(std::string _string) : string(_string)
+	explicit StackString(std::string const& _string) : string(_string)
 	{
-		special = OperationType::normal;
+		special = OperationType::string;
+		bool isString = true;
 	}
 	std::string string;
 };
@@ -53,6 +75,9 @@ public:
 	std::vector<std::shared_ptr<Node>> orders;
 	size_t currentOrder;
 	void Evaluate();
+private:
+	void RunOrders();
+	void ValidateOrders();
 };
 
 
@@ -62,7 +87,6 @@ struct Operation
 	size_t numberOfInput;
 	size_t numberOfOutput;
 	std::function<std::vector<StackNumber> (std::vector<StackNumber>&, Runtime& runtime)> function;
-	std::function<std::vector<StackNumber> (StackString, Runtime& runtime)> stringFunction;
 	OperationType special;
 	bool insideDefinition = false;
 
@@ -71,17 +95,14 @@ struct Operation
 		: numberOfInput(numberOfInput), numberOfOutput(numberOfOutput), function(function), special(special)
 	{
 	}
-
-	//for compatibility with strings
-	Operation(const size_t& numberOfInput, const size_t& numberOfOutput, const std::function<std::vector<StackNumber>(StackString, Runtime& runtime)>& stringFunction, OperationType special)
-		: numberOfInput(numberOfInput), numberOfOutput(numberOfOutput), stringFunction(stringFunction), special(special)
-	{
-	}
 };
 
 struct Operator : Node
 {
-	explicit Operator(const Operation& _operator) : op(_operator) { special = op.special; }
+	explicit Operator(const Operation& _operator) : op(_operator) 
+	{ 
+		special = op.special; 
+	}
 	Operation op;
 };
 

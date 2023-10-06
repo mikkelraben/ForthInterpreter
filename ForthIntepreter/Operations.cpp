@@ -28,42 +28,33 @@ inline std::vector<StackNumber> Operations::PrintCarriageReturn(std::vector<Stac
 	return std::vector<StackNumber>({});
 }
 
-std::vector<StackNumber> Operations::PrintString(StackString string, Runtime& runtime)
+std::vector<StackNumber> Operations::PrintString(std::vector<StackNumber>& nodes, Runtime& runtime)
 {
+	assert(nodes.size() == 0);
 	assert(runtime.userInterface.get());
-	runtime.userInterface->PrintString(string.string);
+	if (auto info = runtime.orders[runtime.currentOrder]->info)
+	{
+		auto stringLocation = info->stringLocation;
+		assert(runtime.orders[stringLocation]->special == OperationType::string);
+		auto string = std::dynamic_pointer_cast<StackString>(runtime.orders[stringLocation]);
+		runtime.userInterface->PrintString(string->string);
+		runtime.currentOrder++;
+	}
+	else
+	{
+		assert(false);
+	}
 	return std::vector<StackNumber>();
 }
 
 //Conditional Operations
 std::vector<StackNumber> Operations::If(std::vector<StackNumber>& nodes, Runtime& runtime)
 {
-	size_t thenLocation = 0;
-	for (size_t i = runtime.currentOrder; i < runtime.orders.size(); i++)
-	{
-		if (runtime.orders[i]->special == OperationType::Then)
-		{
-			thenLocation = i;
-			break;
-		}
-	}
+	assert(nodes.size() == 1);
+	size_t thenLocation = runtime.orders[runtime.currentOrder]->info->endLocation;
 
 
-	if (thenLocation == 0)
-	{
-		throw std::exception("Could not find a Then for an if statement");
-	}
-
-	size_t elseLocation = 0;
-	for (size_t i = runtime.currentOrder; i < thenLocation; i++)
-	{
-		if (runtime.orders[i]->special == OperationType::Else)
-		{
-			elseLocation = i;
-			break;
-		}
-	}
-
+	size_t elseLocation = runtime.orders[runtime.currentOrder]->info->elseLocation;
 
 	//if the if statement evaluates false then skip all orders until end
 	if (!nodes[0].variable)
@@ -83,48 +74,92 @@ std::vector<StackNumber> Operations::If(std::vector<StackNumber>& nodes, Runtime
 
 std::vector<StackNumber> Operations::Then(std::vector<StackNumber>& nodes, Runtime& runtime)
 {
+	assert(nodes.size() == 0);
 	return std::vector<StackNumber>();
 }
 
 std::vector<StackNumber> Operations::Else(std::vector<StackNumber>& nodes, Runtime& runtime)
 {
-	//check if inside if statement
-	//find the next then and goto
-	size_t ifLocation = -1;
-	for (size_t i = runtime.currentOrder; i != 0; i--)
-	{
-		if (runtime.orders[i]->special == OperationType::If)
-		{
-			ifLocation = i;
-			break;
-		}
-		if (runtime.orders[i]->special == OperationType::Then)
-		{
-			ifLocation = -1;
-			break;
-		}
-	}
-	if (ifLocation == -1)
-	{
-		throw std::exception("Else statement outside an if statement");
-	}
+	assert(nodes.size() == 0);
 
-	size_t thenLocation = 0;
-	for (size_t i = runtime.currentOrder; i < runtime.orders.size(); i++)
-	{
-		if (runtime.orders[i]->special == OperationType::Then)
-		{
-			thenLocation = i;
-			break;
-		}
-	}
-
-	if (thenLocation == 0)
-	{
-		throw std::exception("Could not find a Then for an if statement");
-	}
-	runtime.currentOrder = thenLocation;
+	runtime.currentOrder = runtime.orders[runtime.currentOrder]->info->endLocation;
 
 	return std::vector<StackNumber>();
+}
+
+std::vector<StackNumber> Operations::Do(std::vector<StackNumber>& nodes, Runtime& runtime)
+{
+	assert(nodes.size() == 2);
+	auto doOrder = runtime.orders[runtime.currentOrder];
+	auto loopOrder = runtime.orders[doOrder->info->endLocation];
+	loopOrder->info->loopStartingValue = nodes[0].variable;
+	loopOrder->info->loopEndValue = nodes[1].variable;
+	
+	//if false goto end
+	if (nodes[0].variable >= nodes[1].variable)
+	{
+		runtime.currentOrder = doOrder->info->endLocation;
+	}
+
+	//check for impossible loop?
+	if (nodes[0].variable < nodes[1].variable)
+	{
+//TODO figure out how a wrong loop should be handled
+	}
+
+	return std::vector<StackNumber>();
+}
+
+std::vector<StackNumber> Operations::qDo(std::vector<StackNumber>& nodes, Runtime& runtime)
+{
+	assert(nodes.size() == 2);
+	auto doOrder = runtime.orders[runtime.currentOrder];
+	auto loopOrder = runtime.orders[doOrder->info->endLocation];
+	//this do loop executes one more time
+	loopOrder->info->loopStartingValue = nodes[0].variable-1;
+	loopOrder->info->loopEndValue = nodes[1].variable;
+
+	//if false goto end
+	if (nodes[0].variable >= nodes[1].variable)
+	{
+		runtime.currentOrder = doOrder->info->endLocation;
+	}
+
+	//check for impossible loop?
+	if (nodes[0].variable < nodes[1].variable)
+	{
+		
+	}
+
+
+	//check if condition is true if it is false skip to after loop and
+	return std::vector<StackNumber>();
+}
+
+std::vector<StackNumber> Operations::Loop(std::vector<StackNumber>& nodes, Runtime& runtime)
+{
+	//check if condition is true if it is true goto beginning of the loop and
+	auto& loopOrder = runtime.orders[runtime.currentOrder];
+	loopOrder->info->loopStartingValue++;
+	//if true goto start
+	if (loopOrder->info->loopStartingValue < loopOrder->info->loopEndValue)
+	{
+		runtime.currentOrder = loopOrder->info->startLocation;
+		
+	}
+
+
+	//goto do statement
+	return std::vector<StackNumber>();
+}
+
+std::vector<StackNumber> Operations::I(std::vector<StackNumber>& nodes, Runtime& runtime)
+{
+	//return the current iteration in nearest do loop
+	auto loopPosition = runtime.orders[runtime.currentOrder]->info->startLocation;
+	auto loopOrder = runtime.orders[loopPosition];
+	auto thenOrder = runtime.orders[loopOrder->info->endLocation];
+
+	return std::vector<StackNumber>({ StackNumber(thenOrder->info->loopStartingValue) });
 }
 

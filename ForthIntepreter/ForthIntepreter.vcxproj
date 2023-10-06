@@ -119,6 +119,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -128,17 +129,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Exceptions.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Operations.cpp" />
     <ClCompile Include="Runtime.cpp" />
-    <ClCompile Include="tests.cpp" />
+    <ClCompile Include="Test.cpp" />
     <ClCompile Include="Tokenizer.cpp" />
     <ClCompile Include="UserInterface.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Exceptions.h" />
     <ClInclude Include="Operations.h" />
     <ClInclude Include="standardLibraries.h" />
     <ClInclude Include="Runtime.h" />
+    <ClInclude Include="Test.h" />
     <ClInclude Include="Tokenizer.h" />
     <ClInclude Include="UserInterface.h" />
   </ItemGroup>
