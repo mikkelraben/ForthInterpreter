@@ -6,43 +6,43 @@
 
 inline std::vector<StackNumber> Operations::PrintStackNumber(std::vector<StackNumber>& nodes, Runtime& runtime)
 {
-	assert(nodes.size() == 1);
-	assert(runtime.userInterface.get());
+	ASSERT_TRUE(nodes.size() == 1);
+	ASSERT_TRUE(runtime.userInterface.get() != nullptr);
 	runtime.userInterface->PrintStackNumber(nodes[0]);
 	return std::vector<StackNumber>({});
 }
 
 inline std::vector<StackNumber> Operations::PrintAscii(std::vector<StackNumber>& nodes, Runtime& runtime)
 {
-	assert(nodes.size() == 1);
-	assert(runtime.userInterface.get());
+	ASSERT_TRUE(nodes.size() == 1);
+	ASSERT_TRUE(runtime.userInterface.get() != nullptr);
 	runtime.userInterface->PrintAscii(nodes[0]);
 	return std::vector<StackNumber>({});
 }
 
 inline std::vector<StackNumber> Operations::PrintCarriageReturn(std::vector<StackNumber>& nodes, Runtime& runtime)
 {
-	assert(nodes.size() == 0);
-	assert(runtime.userInterface.get());
+	ASSERT_TRUE(nodes.size() == 0);
+	ASSERT_TRUE(runtime.userInterface.get() != nullptr);
 	runtime.userInterface->PrintCarriageReturn();
 	return std::vector<StackNumber>({});
 }
 
 std::vector<StackNumber> Operations::PrintString(std::vector<StackNumber>& nodes, Runtime& runtime)
 {
-	assert(nodes.size() == 0);
-	assert(runtime.userInterface.get());
+	ASSERT_TRUE(nodes.size() == 0);
+	ASSERT_TRUE(runtime.userInterface.get() != nullptr);
 	if (auto info = runtime.orders[runtime.currentOrder]->info)
 	{
 		auto stringLocation = info->stringLocation;
-		assert(runtime.orders[stringLocation]->special == OperationType::string);
+		ASSERT_TRUE(runtime.orders[stringLocation]->special == OperationType::string);
 		auto string = std::dynamic_pointer_cast<StackString>(runtime.orders[stringLocation]);
 		runtime.userInterface->PrintString(string->string);
 		runtime.currentOrder++;
 	}
 	else
 	{
-		assert(false);
+		ASSERT_TRUE(false);
 	}
 	return std::vector<StackNumber>();
 }
@@ -50,7 +50,7 @@ std::vector<StackNumber> Operations::PrintString(std::vector<StackNumber>& nodes
 //Conditional Operations
 std::vector<StackNumber> Operations::If(std::vector<StackNumber>& nodes, Runtime& runtime)
 {
-	assert(nodes.size() == 1);
+	ASSERT_TRUE(nodes.size() == 1);
 	size_t thenLocation = runtime.orders[runtime.currentOrder]->info->endLocation;
 
 
@@ -74,13 +74,13 @@ std::vector<StackNumber> Operations::If(std::vector<StackNumber>& nodes, Runtime
 
 std::vector<StackNumber> Operations::Then(std::vector<StackNumber>& nodes, Runtime& runtime)
 {
-	assert(nodes.size() == 0);
+	ASSERT_TRUE(nodes.size() == 0);
 	return std::vector<StackNumber>();
 }
 
 std::vector<StackNumber> Operations::Else(std::vector<StackNumber>& nodes, Runtime& runtime)
 {
-	assert(nodes.size() == 0);
+	ASSERT_TRUE(nodes.size() == 0);
 
 	runtime.currentOrder = runtime.orders[runtime.currentOrder]->info->endLocation;
 
@@ -89,7 +89,7 @@ std::vector<StackNumber> Operations::Else(std::vector<StackNumber>& nodes, Runti
 
 std::vector<StackNumber> Operations::Do(std::vector<StackNumber>& nodes, Runtime& runtime)
 {
-	assert(nodes.size() == 2);
+	ASSERT_TRUE(nodes.size() == 2);
 	auto doOrder = runtime.orders[runtime.currentOrder];
 	auto loopOrder = runtime.orders[doOrder->info->endLocation];
 	loopOrder->info->loopStartingValue = nodes[0].variable;
@@ -112,7 +112,7 @@ std::vector<StackNumber> Operations::Do(std::vector<StackNumber>& nodes, Runtime
 
 std::vector<StackNumber> Operations::qDo(std::vector<StackNumber>& nodes, Runtime& runtime)
 {
-	assert(nodes.size() == 2);
+	ASSERT_TRUE(nodes.size() == 2);
 	auto doOrder = runtime.orders[runtime.currentOrder];
 	auto loopOrder = runtime.orders[doOrder->info->endLocation];
 	//this do loop executes one more time
@@ -163,3 +163,26 @@ std::vector<StackNumber> Operations::I(std::vector<StackNumber>& nodes, Runtime&
 	return std::vector<StackNumber>({ StackNumber(thenOrder->info->loopStartingValue) });
 }
 
+std::vector<StackNumber> Operations::While(std::vector<StackNumber>& nodes, Runtime& runtime)
+{
+	ASSERT_TRUE(nodes.size() == 1);
+	if (nodes[0].variable == 0)
+	{
+		runtime.currentOrder = runtime.orders[runtime.currentOrder]->info->endLocation;
+	}
+	return std::vector<StackNumber>();
+}
+
+std::vector<StackNumber> Operations::Repeat(std::vector<StackNumber>& nodes, Runtime& runtime)
+{
+	ASSERT_TRUE(nodes.size() == 0);
+
+	runtime.currentOrder = runtime.orders[runtime.currentOrder]->info->startLocation;
+
+	return std::vector<StackNumber>();
+}
+
+std::vector<StackNumber> Operations::Begin(std::vector<StackNumber>& nodes, Runtime& runtime)
+{
+	return std::vector<StackNumber>();
+}

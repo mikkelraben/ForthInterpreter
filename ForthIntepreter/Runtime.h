@@ -13,6 +13,7 @@ enum class OperationType
 	Do,
 	Loop,
 	I,
+	Begin,
 	While,
 	Repeat,
 };
@@ -26,6 +27,7 @@ struct ExtraInfo
 	size_t startLocation = -1;
 	size_t endLocation = -1;
 	size_t elseLocation = -1;
+	size_t whileLocation = -1;
 	int loopStartingValue = 0;
 	int loopEndValue = 0;
 	int loopIteration = 0;

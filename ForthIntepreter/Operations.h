@@ -126,6 +126,10 @@ struct Operations
 	static std::vector<StackNumber> qDo(std::vector<StackNumber>& nodes, Runtime& runtime);
 	static std::vector<StackNumber> Loop(std::vector<StackNumber>& nodes, Runtime& runtime);
 	static std::vector<StackNumber> I(std::vector<StackNumber>& nodes, Runtime& runtime);
+
+	static std::vector<StackNumber> While(std::vector<StackNumber>& nodes, Runtime& runtime);
+	static std::vector<StackNumber> Repeat(std::vector<StackNumber>& nodes, Runtime& runtime);
+	static std::vector<StackNumber> Begin(std::vector<StackNumber>& nodes, Runtime& runtime);
 };
 
 class Operators
@@ -170,7 +174,8 @@ public:
 	const static inline Operation Loop = Operation(0, 0, Operations::Loop, OperationType::Loop);
 	const static inline Operation I = Operation(0, 1, Operations::I, OperationType::I);
 
-	const static inline Operation While = Operation(0, 1, Operations::I, OperationType::While);
-	const static inline Operation Repeat = Operation(0, 1, Operations::I, OperationType::Repeat);
+	const static inline Operation Begin = Operation(0, 0, Operations::Begin, OperationType::Begin);
+	const static inline Operation While = Operation(1, 0, Operations::While, OperationType::While);
+	const static inline Operation Repeat = Operation(0, 0, Operations::Repeat, OperationType::Repeat);
 
 };

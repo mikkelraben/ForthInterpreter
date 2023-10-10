@@ -38,6 +38,16 @@ int main()
     runtime.AddOrder(std::make_shared<StackNumber>(4));
     runtime.AddOrder(std::make_shared<StackNumber>(5));
     runtime.AddOrder(std::make_shared<Operator>(Operators::add));
+    runtime.AddOrder(std::make_shared<StackNumber>(0));
+    runtime.AddOrder(std::make_shared<Operator>(Operators::Begin));
+    runtime.AddOrder(std::make_shared<Operator>(Operators::duplicate));
+    runtime.AddOrder(std::make_shared<StackNumber>(5));
+    runtime.AddOrder(std::make_shared<Operator>(Operators::lessThan));
+    runtime.AddOrder(std::make_shared<Operator>(Operators::While));
+    runtime.AddOrder(std::make_shared<Operator>(Operators::duplicate));
+    runtime.AddOrder(std::make_shared<StackNumber>(1));
+    runtime.AddOrder(std::make_shared<Operator>(Operators::add));
+    runtime.AddOrder(std::make_shared<Operator>(Operators::Repeat));
 
 
     

@@ -111,6 +111,7 @@ std::string LoopErrorMessage(LoopInfo loopType)
 		errorMessage = "Expected Loop for do loop at position: ";
 		break;
 	case LoopTypes::While:
+		errorMessage = "Expected Repeat for while loop at postion: ";
 		break;
 	case LoopTypes::Definition:
 		break;
@@ -150,13 +151,18 @@ void Runtime::ValidateOrders()
 	std::stack<LoopInfo> loopStack;
 	for (size_t i = 0; i < orders.size(); i++)
 	{
+		if (orders[i]->validated)
+		{
+			continue;
+		}
+
 		//If statement
-		if (orders[i]->special == OperationType::If && !orders[i]->validated)
+		if (orders[i]->special == OperationType::If)
 		{
 			loopStack.emplace(LoopTypes::If,i);
 			addInfo(orders[i]);
 		}
-		if (orders[i]->special == OperationType::Then && !orders[i]->validated)
+		if (orders[i]->special == OperationType::Then)
 		{
 			if (loopStack.empty())
 			{
@@ -177,12 +183,12 @@ void Runtime::ValidateOrders()
 		}
 
 		//Do loop
-		if (orders[i]->special == OperationType::Do && !orders[i]->validated)
+		if (orders[i]->special == OperationType::Do)
 		{
 			loopStack.emplace(LoopTypes::Do, i);
 			addInfo(orders[i]);
 		}
-		if (orders[i]->special == OperationType::Loop && !orders[i]->validated)
+		if (orders[i]->special == OperationType::Loop)
 		{
 			if (loopStack.empty())
 			{
@@ -204,7 +210,7 @@ void Runtime::ValidateOrders()
 			}
 		}
 
-		if (orders[i]->special == OperationType::I && !orders[i]->validated)
+		if (orders[i]->special == OperationType::I)
 		{
 			
 			addInfo(orders[i]);
@@ -219,21 +225,44 @@ void Runtime::ValidateOrders()
 
 		}
 
-		//while loop
-		if (orders[i]->special == OperationType::While && !orders[i]->validated)
+		//begin-while-repeat loop
+		if (orders[i]->special == OperationType::Begin)
 		{
 			loopStack.emplace(LoopTypes::While, i);
 			addInfo(orders[i]);
 		}
-		if (orders[i]->special == OperationType::Repeat && !orders[i]->validated)
+		// #TODO no validation for while loop right now
+		if (orders[i]->special == OperationType::While)
 		{
-			if (loopStack.empty())
-			{
-				throw SyntaxError("Expected Do");
-			}
 			if (loopStack.top().type == LoopTypes::While)
 			{
 				auto startLoop = loopStack.top().beginning;
+				orders[startLoop]->info->whileLocation = i;
+			}
+			else
+			{
+				throw SyntaxError("Expected Begin");
+			}
+
+		}
+
+		if (orders[i]->special == OperationType::Repeat)
+		{
+			if (loopStack.empty())
+			{
+				throw SyntaxError("Expected Begin");
+			}
+			if (loopStack.top().type == LoopTypes::While)
+			{
+				
+				auto startLoop = loopStack.top().beginning;
+				auto whilePosition = orders[startLoop]->info->whileLocation;
+				if (whilePosition == -1)
+				{
+					throw SyntaxError("No While Statement inside Begin-Repeat");
+				}
+				addInfo(orders[whilePosition]);
+				orders[whilePosition]->info->endLocation = i;
 				orders[startLoop]->info->endLocation = i;
 				orders[startLoop]->validated = true;
 				orders[i]->validated = true;
@@ -246,8 +275,6 @@ void Runtime::ValidateOrders()
 				throw SyntaxError(LoopErrorMessage(loopStack.top()));
 			}
 		}
-
-
 
 	}
 	if (!loopStack.empty())
