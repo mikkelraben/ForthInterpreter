@@ -65,6 +65,13 @@ struct StackNumber : public StackVariable
 	int variable;
 };
 
+class Function
+{
+	std::string functionName;
+	std::vector<std::shared_ptr<Node>> orders;
+	size_t currentOrder;
+};
+
 class UserInterface;
 
 //Holds information about the stack, variables, loops and I/O
@@ -75,6 +82,8 @@ public:
 	std::stack<StackNumber> stack;
 	std::shared_ptr<UserInterface> userInterface;
 	std::vector<std::shared_ptr<Node>> orders;
+	std::stack<Function> callStack;
+	Function& currentFunction();
 	size_t currentOrder;
 	void Evaluate();
 private:

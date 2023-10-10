@@ -77,6 +77,11 @@ void Runtime::RunOrders()
 
 }
 
+Function& Runtime::currentFunction()
+{
+	return callStack.top();
+}
+
 void addInfo(std::shared_ptr<Node> node)
 {
 	if (!node->info)
