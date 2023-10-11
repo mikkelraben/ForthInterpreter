@@ -12,6 +12,7 @@ int main()
     auto runtime = Runtime();
     runtime.userInterface = ui;
 
+    runtime.addMaintoCallStack();
     runtime.AddOrder(std::make_shared<StackNumber>(4));
     runtime.AddOrder(std::make_shared<StackNumber>(5));
     runtime.AddOrder(std::make_shared<Operator>(Operators::lessThan));
@@ -35,6 +36,7 @@ int main()
     runtime.AddOrder(std::make_shared<Operator>(Operators::Then));
 
 
+    runtime.AddOrder(std::make_shared<Operator>(Operators::CallFunction));
     runtime.AddOrder(std::make_shared<StackNumber>(4));
     runtime.AddOrder(std::make_shared<StackNumber>(5));
     runtime.AddOrder(std::make_shared<Operator>(Operators::add));
@@ -48,6 +50,7 @@ int main()
     runtime.AddOrder(std::make_shared<StackNumber>(1));
     runtime.AddOrder(std::make_shared<Operator>(Operators::add));
     runtime.AddOrder(std::make_shared<Operator>(Operators::Repeat));
+
 
 
     

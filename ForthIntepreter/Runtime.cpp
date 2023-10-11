@@ -8,7 +8,9 @@
 
 void Runtime::AddOrder(std::shared_ptr<Node> node)
 {
-	orders.emplace_back(node);
+	//cannot add order to an empty function
+	ASSERT_TRUE(currentFunction() != nullptr);
+	currentFunction()->orders.emplace_back(node);
 }
 
 void Runtime::Evaluate()
@@ -17,7 +19,6 @@ void Runtime::Evaluate()
 	{
 		ValidateOrders();
 		RunOrders();
-		orders.clear();
 	}
 	catch (ForthExceptions& e)
 	{
@@ -37,9 +38,9 @@ void Runtime::Evaluate()
 
 void Runtime::RunOrders()
 {
-	for (currentOrder = 0; currentOrder < orders.size(); currentOrder++)
+	for (currentFunction()->currentOrder = 0; currentFunction()->currentOrder < currentFunction()->orders.size(); currentFunction()->currentOrder++)
 	{
-		auto node = orders[currentOrder];
+		auto node = currentFunction()->orders[currentFunction()->currentOrder];
 		if (auto op = std::dynamic_pointer_cast<Operator>(node))
 		{
 			if (stack.size() < op->op.numberOfInput)
@@ -72,14 +73,41 @@ void Runtime::RunOrders()
 		{
 			assert(false);
 		}
-
+		currentFunction()->currentOrder++;
 	}
-
+	popFunctionFromCallStack();
 }
 
-Function& Runtime::currentFunction()
+std::shared_ptr<Function> Runtime::currentFunction()
 {
 	return callStack.top();
+}
+
+void Runtime::addMaintoCallStack()
+{
+	std::vector<std::shared_ptr<Node>> orders;
+	callStack.push(std::make_shared<Function>("main",orders));
+}
+
+void Runtime::addFunctionToCallStack(std::shared_ptr<Function> function)
+{
+	function->currentOrder = 0;
+	callStack.push(function);
+}
+
+void Runtime::popFunctionFromCallStack()
+{
+	callStack.pop();
+}
+
+size_t& Runtime::currentOrder()
+{
+	return currentFunction()->currentOrder;
+}
+
+std::vector<std::shared_ptr<Node>>& Runtime::orders()
+{
+	return currentFunction()->orders;
 }
 
 void addInfo(std::shared_ptr<Node> node)
@@ -131,18 +159,18 @@ std::string LoopErrorMessage(LoopInfo loopType)
 void Runtime::ValidateOrders()
 {
 	//check strings
-	for (size_t i = 0; i < orders.size(); i++)
+	for (size_t i = 0; i < orders().size(); i++)
 	{
-		if (orders[i]->special == OperationType::printString)
+		if (orders()[i]->special == OperationType::printString)
 		{
-			if (orders.size() < i)
+			if (orders().size() < i)
 			{
 				throw SyntaxError("Could not find string to print");
 			}
-			if (orders[i + 1]->special == OperationType::string)
+			if (orders()[i + 1]->special == OperationType::string)
 			{
-				addInfo(orders[i]);
-				orders[i]->info->stringLocation = i + 1;
+				addInfo(orders()[i]);
+				orders()[i]->info->stringLocation = i + 1;
 			}
 			else
 			{
@@ -154,20 +182,20 @@ void Runtime::ValidateOrders()
 
 	//check loops, if statements and loops borders 
 	std::stack<LoopInfo> loopStack;
-	for (size_t i = 0; i < orders.size(); i++)
+	for (size_t i = 0; i < orders().size(); i++)
 	{
-		if (orders[i]->validated)
+		if (orders()[i]->validated)
 		{
 			continue;
 		}
 
 		//If statement
-		if (orders[i]->special == OperationType::If)
+		if (orders()[i]->special == OperationType::If)
 		{
 			loopStack.emplace(LoopTypes::If,i);
-			addInfo(orders[i]);
+			addInfo(orders()[i]);
 		}
-		if (orders[i]->special == OperationType::Then)
+		if (orders()[i]->special == OperationType::Then)
 		{
 			if (loopStack.empty())
 			{
@@ -176,9 +204,9 @@ void Runtime::ValidateOrders()
 			if (loopStack.top().type == LoopTypes::If)
 			{
 				auto startLoop = loopStack.top().beginning;
-				orders[startLoop]->info->endLocation = i;
-				orders[startLoop]->validated = true;
-				orders[i]->validated = true;
+				orders()[startLoop]->info->endLocation = i;
+				orders()[startLoop]->validated = true;
+				orders()[i]->validated = true;
 				loopStack.pop();
 			}
 			else
@@ -188,12 +216,12 @@ void Runtime::ValidateOrders()
 		}
 
 		//Do loop
-		if (orders[i]->special == OperationType::Do)
+		if (orders()[i]->special == OperationType::Do)
 		{
 			loopStack.emplace(LoopTypes::Do, i);
-			addInfo(orders[i]);
+			addInfo(orders()[i]);
 		}
-		if (orders[i]->special == OperationType::Loop)
+		if (orders()[i]->special == OperationType::Loop)
 		{
 			if (loopStack.empty())
 			{
@@ -202,11 +230,11 @@ void Runtime::ValidateOrders()
 			if (loopStack.top().type == LoopTypes::Do)
 			{
 				auto startLoop = loopStack.top().beginning;
-				orders[startLoop]->info->endLocation = i;
-				orders[startLoop]->validated = true;
-				orders[i]->validated = true;
-				addInfo(orders[i]);
-				orders[i]->info->startLocation = startLoop;
+				orders()[startLoop]->info->endLocation = i;
+				orders()[startLoop]->validated = true;
+				orders()[i]->validated = true;
+				addInfo(orders()[i]);
+				orders()[i]->info->startLocation = startLoop;
 				loopStack.pop();
 			}
 			else
@@ -215,13 +243,13 @@ void Runtime::ValidateOrders()
 			}
 		}
 
-		if (orders[i]->special == OperationType::I)
+		if (orders()[i]->special == OperationType::I)
 		{
 			
-			addInfo(orders[i]);
+			addInfo(orders()[i]);
 			if (loopStack.top().type == LoopTypes::Do)
 			{
-				orders[i]->info->startLocation = loopStack.top().beginning;
+				orders()[i]->info->startLocation = loopStack.top().beginning;
 			}
 			else
 			{
@@ -231,18 +259,18 @@ void Runtime::ValidateOrders()
 		}
 
 		//begin-while-repeat loop
-		if (orders[i]->special == OperationType::Begin)
+		if (orders()[i]->special == OperationType::Begin)
 		{
 			loopStack.emplace(LoopTypes::While, i);
-			addInfo(orders[i]);
+			addInfo(orders()[i]);
 		}
 		// #TODO no validation for while loop right now
-		if (orders[i]->special == OperationType::While)
+		if (orders()[i]->special == OperationType::While)
 		{
 			if (loopStack.top().type == LoopTypes::While)
 			{
 				auto startLoop = loopStack.top().beginning;
-				orders[startLoop]->info->whileLocation = i;
+				orders()[startLoop]->info->whileLocation = i;
 			}
 			else
 			{
@@ -251,7 +279,7 @@ void Runtime::ValidateOrders()
 
 		}
 
-		if (orders[i]->special == OperationType::Repeat)
+		if (orders()[i]->special == OperationType::Repeat)
 		{
 			if (loopStack.empty())
 			{
@@ -261,18 +289,18 @@ void Runtime::ValidateOrders()
 			{
 				
 				auto startLoop = loopStack.top().beginning;
-				auto whilePosition = orders[startLoop]->info->whileLocation;
+				auto whilePosition = orders()[startLoop]->info->whileLocation;
 				if (whilePosition == -1)
 				{
 					throw SyntaxError("No While Statement inside Begin-Repeat");
 				}
-				addInfo(orders[whilePosition]);
-				orders[whilePosition]->info->endLocation = i;
-				orders[startLoop]->info->endLocation = i;
-				orders[startLoop]->validated = true;
-				orders[i]->validated = true;
-				addInfo(orders[i]);
-				orders[i]->info->startLocation = startLoop;
+				addInfo(orders()[whilePosition]);
+				orders()[whilePosition]->info->endLocation = i;
+				orders()[startLoop]->info->endLocation = i;
+				orders()[startLoop]->validated = true;
+				orders()[i]->validated = true;
+				addInfo(orders()[i]);
+				orders()[i]->info->startLocation = startLoop;
 				loopStack.pop();
 			}
 			else
@@ -289,18 +317,18 @@ void Runtime::ValidateOrders()
 
 	size_t currentThen = -1;
 	//check and assign else statements
-	for (int i = 0; i < orders.size(); i++)
+	for (int i = 0; i < orders().size(); i++)
 	{
-		if (orders[i]->special == OperationType::Else)
+		if (orders()[i]->special == OperationType::Else)
 		{
 			size_t ifLocation = -1;
 			for (size_t j = i; j != 0; j--)
 			{
-				if (orders[j]->special == OperationType::If)
+				if (orders()[j]->special == OperationType::If)
 				{
 					ifLocation = j;
 				}
-				if (orders[j]->special == OperationType::Then)
+				if (orders()[j]->special == OperationType::Then)
 				{
 					ifLocation = -1;
 				}
@@ -309,14 +337,14 @@ void Runtime::ValidateOrders()
 			{
 				throw SyntaxError("Else statement at position: "+ std::to_string(i) + " outside an if statement");
 			}
-			if (orders[ifLocation]->info->elseLocation != -1)
+			if (orders()[ifLocation]->info->elseLocation != -1)
 			{
 				throw SyntaxError("Else statement at position: " + std::to_string(i) + " is inside an if statement that already has an else statement");
 			}
-			orders[ifLocation]->info->elseLocation = i;
+			orders()[ifLocation]->info->elseLocation = i;
 
-			addInfo(orders[i]);
-			orders[i]->info->endLocation = orders[ifLocation]->info->endLocation;
+			addInfo(orders()[i]);
+			orders()[i]->info->endLocation = orders()[ifLocation]->info->endLocation;
 		}
 	}
 }

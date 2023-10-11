@@ -16,6 +16,8 @@ enum class OperationType
 	Begin,
 	While,
 	Repeat,
+	Function,
+	FunctionEnd,
 };
 
 
@@ -67,9 +69,22 @@ struct StackNumber : public StackVariable
 
 class Function
 {
+public:
 	std::string functionName;
 	std::vector<std::shared_ptr<Node>> orders;
-	size_t currentOrder;
+	size_t currentOrder = 0;
+
+	Function(const std::string& functionName, const std::vector<std::shared_ptr<Node>>& orders)
+		: functionName(functionName), orders(orders)
+	{
+
+	}
+};
+
+class RuntimeStorage
+{
+	std::unordered_map<std::string, std::shared_ptr<Function>> functions;
+	//variables
 };
 
 class UserInterface;
@@ -81,10 +96,15 @@ public:
 	void AddOrder(std::shared_ptr<Node> node);
 	std::stack<StackNumber> stack;
 	std::shared_ptr<UserInterface> userInterface;
-	std::vector<std::shared_ptr<Node>> orders;
-	std::stack<Function> callStack;
-	Function& currentFunction();
-	size_t currentOrder;
+	std::stack<std::shared_ptr<Function>> callStack;
+
+	std::shared_ptr<Function> currentFunction();
+	size_t& currentOrder();
+	std::vector<std::shared_ptr<Node>>& orders();
+
+	void addMaintoCallStack();
+	void addFunctionToCallStack(std::shared_ptr<Function>);
+	void popFunctionFromCallStack();
 	void Evaluate();
 private:
 	void RunOrders();
