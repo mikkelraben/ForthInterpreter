@@ -180,5 +180,5 @@ public:
 	const static inline Operation While = Operation(1, 0, Operations::While, OperationType::While);
 	const static inline Operation Repeat = Operation(0, 0, Operations::Repeat, OperationType::Repeat);
 
-	const static inline Operation CallFunction = Operation(0, 0, Operations::CallFunction, OperationType::Function);
+	const static inline Operation CallFunction = Operation(0, 0, Operations::CallFunction, OperationType::CallFunction);
 };

@@ -177,6 +177,23 @@ void Runtime::ValidateOrders()
 				throw SyntaxError("Could not find string to print");
 			}
 		}
+		if (orders()[i]->special == OperationType::CallFunction)
+		{
+			if (orders().size() < i)
+			{
+				throw SyntaxError("Could not find function name");
+			}
+			if (orders()[i + 1]->special == OperationType::string)
+			{
+				addInfo(orders()[i]);
+				orders()[i]->info->stringLocation = i + 1;
+			}
+			else
+			{
+				throw SyntaxError("Could not find function name");
+			}
+		}
+
 	}
 
 

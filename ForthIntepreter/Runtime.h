@@ -16,7 +16,8 @@ enum class OperationType
 	Begin,
 	While,
 	Repeat,
-	Function,
+	CallFunction,
+	FunctionBegin,
 	FunctionEnd,
 };
 

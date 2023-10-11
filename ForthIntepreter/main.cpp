@@ -37,6 +37,7 @@ int main()
 
 
     runtime.AddOrder(std::make_shared<Operator>(Operators::CallFunction));
+    runtime.AddOrder(std::make_shared<StackString>("SomeFunctionName"));
     runtime.AddOrder(std::make_shared<StackNumber>(4));
     runtime.AddOrder(std::make_shared<StackNumber>(5));
     runtime.AddOrder(std::make_shared<Operator>(Operators::add));
