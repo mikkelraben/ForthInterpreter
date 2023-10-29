@@ -1,29 +1,32 @@
 #include "UserInterface.h"
 #include <iostream>
+#include <ranges>
 
-std::string TakeInputFromUser()
+
+std::string ConsoleInterface::TakeInputFromUser()
 {
     std::string input;
-    std::cin >> input;
+    std::getline(std::cin, input);
     return input;
-}
-
-std::vector<std::shared_ptr<Node>> ConsoleInterface::TakeInputFromUser()
-{
-    return std::vector<std::shared_ptr<Node>>();
 }
 
 void ConsoleInterface::PrintStack(std::stack<StackNumber> stack)
 {
     std::cout << std::endl << "Stack:" << std::endl;
-    std::cout << "top -> ";
 
-    auto stackSize = stack.size();
-    for (size_t i = 0; i < stackSize; i++)
+    std::vector<StackNumber> stackVector;
+    while (!stack.empty())
     {
-        std::cout << stack.top().variable << " ";
+        stackVector.push_back(stack.top());
         stack.pop();
     }
+
+    for (const auto& number : std::views::reverse(stackVector))
+    {
+        std::cout << number.variable << " ";
+    }
+
+    std::cout << "<- top ";
 }
 
 void ConsoleInterface::PrintStackNumber(StackNumber variable)

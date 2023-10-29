@@ -5,7 +5,7 @@
 class UserInterface
 {
 public:
-    virtual std::vector<std::shared_ptr<Node>> TakeInputFromUser() = 0;
+    virtual std::string TakeInputFromUser() = 0;
     virtual void PrintStack(std::stack<StackNumber> stack) = 0;
     virtual void PrintStackNumber(StackNumber variable) = 0;
     virtual void PrintAscii(StackNumber ascii) = 0;
@@ -17,7 +17,7 @@ class ConsoleInterface : public UserInterface
 {
 
 public:
-    std::vector<std::shared_ptr<Node>> TakeInputFromUser() override;
+    std::string TakeInputFromUser() override;
     void PrintStack(std::stack<StackNumber> stack) override;
     void PrintStackNumber(StackNumber variable) override;
     void PrintAscii(StackNumber ascii) override;

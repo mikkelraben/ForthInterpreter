@@ -2,62 +2,42 @@
 #include "Runtime.h"
 #include "Operations.h"
 #include "Test.h"
+#include "Tokenizer.h"
 
 int main()
-{    
+{
     auto ui = std::make_shared<ConsoleInterface>();
 
+
     RunTests(ui);
-    
+
     auto runtime = Runtime();
     runtime.userInterface = ui;
 
-    runtime.addMaintoCallStack();
-    runtime.AddOrder(std::make_shared<StackNumber>(4));
-    runtime.AddOrder(std::make_shared<StackNumber>(5));
-    runtime.AddOrder(std::make_shared<Operator>(Operators::lessThan));
-    runtime.AddOrder(std::make_shared<Operator>(Operators::If));
-    runtime.AddOrder(std::make_shared<Operator>(Operators::printString));
-    runtime.AddOrder(std::make_shared<StackString>("True"));
+    auto tokenizer = Tokenizer(runtime);
+    std::shared_ptr<Function> function;
 
-    runtime.AddOrder(std::make_shared<StackNumber>(10));
-    runtime.AddOrder(std::make_shared<StackNumber>(0));
-    runtime.AddOrder(std::make_shared<Operator>(Operators::Do));
-    runtime.AddOrder(std::make_shared<Operator>(Operators::printCarriageReturn));
-    runtime.AddOrder(std::make_shared<Operator>(Operators::I));
-    runtime.AddOrder(std::make_shared<Operator>(Operators::printVariable));
-
-    runtime.AddOrder(std::make_shared<Operator>(Operators::Loop));
-
-    runtime.AddOrder(std::make_shared<Operator>(Operators::Else));
-
-    runtime.AddOrder(std::make_shared<Operator>(Operators::printString));
-    runtime.AddOrder(std::make_shared<StackString>("False"));
-    runtime.AddOrder(std::make_shared<Operator>(Operators::Then));
+    //std::vector<std::string> commands = { "4 5 < IF .\" True\" 10 0 DO CR I . LOOP ELSE .\" False\" THEN 4 5 + 0 BEGIN DUP 5 < WHILE DUP 1 + REPEAT : foo 100 + ;" , "foo" };
+    while (true)
+    {
+        std::string command = ui->TakeInputFromUser();
 
 
-    runtime.AddOrder(std::make_shared<Operator>(Operators::CallFunction));
-    runtime.AddOrder(std::make_shared<StackString>("SomeFunctionName"));
-    runtime.AddOrder(std::make_shared<StackNumber>(4));
-    runtime.AddOrder(std::make_shared<StackNumber>(5));
-    runtime.AddOrder(std::make_shared<Operator>(Operators::add));
-    runtime.AddOrder(std::make_shared<StackNumber>(0));
-    runtime.AddOrder(std::make_shared<Operator>(Operators::Begin));
-    runtime.AddOrder(std::make_shared<Operator>(Operators::duplicate));
-    runtime.AddOrder(std::make_shared<StackNumber>(5));
-    runtime.AddOrder(std::make_shared<Operator>(Operators::lessThan));
-    runtime.AddOrder(std::make_shared<Operator>(Operators::While));
-    runtime.AddOrder(std::make_shared<Operator>(Operators::duplicate));
-    runtime.AddOrder(std::make_shared<StackNumber>(1));
-    runtime.AddOrder(std::make_shared<Operator>(Operators::add));
-    runtime.AddOrder(std::make_shared<Operator>(Operators::Repeat));
+        try
+        {
+            function = std::make_shared<Function>(tokenizer.parseInput(command));
+            runtime.addFunctionToCallStack(function);
+            runtime.Evaluate();
 
+        }
+        catch (const ParseError& error)
+        {
+            ui->PrintString(" ");
+            ui->PrintString(error.errorMessage);
+        }
+        ui->PrintString(" ok");
 
+        ui->PrintCarriageReturn();
 
-    
-    runtime.Evaluate();
-
-    
-
-    ui->PrintStack(runtime.stack);
+    }
 }

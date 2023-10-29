@@ -1,7 +1,15 @@
 #pragma once
 #include "Runtime.h"
+
 class Tokenizer
 {
-    static Function& parseInput()
+    Runtime& runtime;
+public:
+    Function parseInput(std::string_view input);
+
+    explicit Tokenizer(Runtime& _runtime)
+        : runtime(_runtime)
+    {
+    }
 };
 
