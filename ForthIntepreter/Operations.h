@@ -13,6 +13,14 @@ struct Operations
         auto variable = StackNumber(nodes[1].variable + nodes[0].variable);
         return std::vector<StackNumber>({ variable });
     }
+    static std::vector<StackNumber> Mod(std::vector<StackNumber>& nodes, Runtime& runtime)
+    {
+        ASSERT_TRUE(nodes.size() == 2);
+
+        auto variable = StackNumber(nodes[1].variable % nodes[0].variable);
+        return std::vector<StackNumber>({ variable });
+    }
+
     static std::vector<StackNumber> Subtract(std::vector<StackNumber>& nodes, Runtime& runtime)
     {
         ASSERT_TRUE(nodes.size() == 2);

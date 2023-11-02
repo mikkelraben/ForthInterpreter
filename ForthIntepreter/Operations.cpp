@@ -59,7 +59,7 @@ std::vector<StackNumber> Operations::If(std::vector<StackNumber>& nodes, Runtime
     //if the if statement evaluates false then skip all orders until end
     if (!nodes[0].variable)
     {
-        if (elseLocation != 0)
+        if (elseLocation != -1)
         {
             runtime.currentOrder() = elseLocation;
         }

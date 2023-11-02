@@ -11,33 +11,33 @@ int main()
 
     RunTests(ui);
 
-    auto runtime = Runtime();
-    runtime.userInterface = ui;
+    //auto runtime = Runtime();
+    //runtime.userInterface = ui;
 
-    auto tokenizer = Tokenizer(runtime);
-    std::shared_ptr<Function> function;
+    //auto tokenizer = Tokenizer(runtime);
+    //std::shared_ptr<Function> function;
 
-    //std::vector<std::string> commands = { "4 5 < IF .\" True\" 10 0 DO CR I . LOOP ELSE .\" False\" THEN 4 5 + 0 BEGIN DUP 5 < WHILE DUP 1 + REPEAT : foo 100 + ;" , "foo" };
-    while (true)
-    {
-        std::string command = ui->TakeInputFromUser();
+    ////std::vector<std::string> commands = { "4 5 < IF .\" True\" 10 0 DO CR I . LOOP ELSE .\" False\" THEN 4 5 + 0 BEGIN DUP 5 < WHILE DUP 1 + REPEAT : foo 100 + ;" , "foo" };
+    //while (true)
+    //{
+    //    std::string command = ui->TakeInputFromUser();
 
 
-        try
-        {
-            function = std::make_shared<Function>(tokenizer.parseInput(command));
-            runtime.addFunctionToCallStack(function);
-            runtime.Evaluate();
+    //    try
+    //    {
+    //        function = std::make_shared<Function>(tokenizer.parseInput(command));
+    //        runtime.addFunctionToCallStack(function);
+    //        runtime.Evaluate();
+    //        ui->PrintString(" ok");
+    //    }
+    //    catch (const ParseError& error)
+    //    {
+    //        ui->PrintString(" ");
+    //        ui->PrintString(error.errorMessage);
+    //    }
 
-        }
-        catch (const ParseError& error)
-        {
-            ui->PrintString(" ");
-            ui->PrintString(error.errorMessage);
-        }
-        ui->PrintString(" ok");
 
-        ui->PrintCarriageReturn();
+    //    ui->PrintCarriageReturn();
 
-    }
+    //}
 }

@@ -13,6 +13,7 @@ public:
         {"-", Operation(2, 1, Operations::Subtract, OperationType::normal)},
         {"*", Operation(2, 1, Operations::Multiply, OperationType::normal)},
         {"/", Operation(2, 1, Operations::Divide, OperationType::normal)},
+        {"MOD", Operation(2, 1, Operations::Mod, OperationType::normal)},
 
         //Boolean Logic
         {"=", Operation(2, 1, Operations::Equal, OperationType::normal)},
@@ -85,6 +86,10 @@ void Tokenize(std::string_view& input, std::vector<Token>& tokens)
         if (token == ".\"")
         {
             std::getline(line, token, '\"');
+            if (token == ".\"")
+            {
+                throw ParseError(token, input.find(token), input.find(token) + token.length());
+            }
             tokens.emplace_back(token, TokenTypes::String);
         }
         else if (token == ":")
