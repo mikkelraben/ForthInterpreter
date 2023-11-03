@@ -116,7 +116,7 @@ struct Operations
     static std::vector<StackNumber> Rotate(std::vector<StackNumber>& nodes, Runtime& runtime)
     {
         ASSERT_TRUE(nodes.size() == 3);
-        return std::vector<StackNumber>({ nodes[0],nodes[1],nodes[2] });
+        return std::vector<StackNumber>({ nodes[2],nodes[1],nodes[0] });
     }
 
     //I/O
