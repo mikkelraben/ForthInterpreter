@@ -233,7 +233,7 @@ void Runtime::ValidateOrders()
 
 
     //check loops, if statements and loops borders 
-    std::stack<LoopInfo> loopStack;
+    std::vector<LoopInfo> loopStack;
     for (size_t i = 0; i < orders().size(); i++)
     {
         if (orders()[i]->validated)
@@ -244,33 +244,59 @@ void Runtime::ValidateOrders()
         //If statement
         if (orders()[i]->special == OperationType::If)
         {
-            loopStack.emplace(LoopTypes::If, i);
+            loopStack.emplace_back(LoopTypes::If, i);
             addInfo(orders()[i]);
         }
+
+        if (orders()[i]->special == OperationType::Else)
+        {
+            bool foundIf = false;
+            for (int j = loopStack.size() - 1; j >= 0; j--)
+            {
+                if (loopStack[j].type == LoopTypes::If)
+                {
+                    size_t ifLocation = loopStack[j].beginning;
+                    if (orders()[ifLocation]->info->elseLocation != -1)
+                    {
+                        throw SyntaxError(std::format("Else statement at position: {} is inside an if statement that already has an else statement", i));
+                    }
+                    orders()[ifLocation]->info->elseLocation = i;
+                    addInfo(orders()[i]);
+                    orders()[i]->info->endLocation = orders()[ifLocation]->info->endLocation;
+                    foundIf = true;
+                    break;
+                }
+            }
+            if (!foundIf)
+            {
+                throw SyntaxError("Expected If");
+            }
+        }
+
         if (orders()[i]->special == OperationType::Then)
         {
             if (loopStack.empty())
             {
                 throw SyntaxError("Expected If");
             }
-            if (loopStack.top().type == LoopTypes::If)
+            if (loopStack.back().type == LoopTypes::If)
             {
-                auto startLoop = loopStack.top().beginning;
+                auto startLoop = loopStack.back().beginning;
                 orders()[startLoop]->info->endLocation = i;
                 orders()[startLoop]->validated = true;
                 orders()[i]->validated = true;
-                loopStack.pop();
+                loopStack.pop_back();
             }
             else
             {
-                throw SyntaxError(LoopErrorMessage(loopStack.top()));
+                throw SyntaxError(LoopErrorMessage(loopStack.back()));
             }
         }
 
         //Do loop
         if (orders()[i]->special == OperationType::Do)
         {
-            loopStack.emplace(LoopTypes::Do, i);
+            loopStack.emplace_back(LoopTypes::Do, i);
             addInfo(orders()[i]);
         }
         if (orders()[i]->special == OperationType::Loop)
@@ -279,19 +305,19 @@ void Runtime::ValidateOrders()
             {
                 throw SyntaxError("Expected Do");
             }
-            if (loopStack.top().type == LoopTypes::Do)
+            if (loopStack.back().type == LoopTypes::Do)
             {
-                auto startLoop = loopStack.top().beginning;
+                auto startLoop = loopStack.back().beginning;
                 orders()[startLoop]->info->endLocation = i;
                 orders()[startLoop]->validated = true;
                 orders()[i]->validated = true;
                 addInfo(orders()[i]);
                 orders()[i]->info->startLocation = startLoop;
-                loopStack.pop();
+                loopStack.pop_back();
             }
             else
             {
-                throw SyntaxError(LoopErrorMessage(loopStack.top()));
+                throw SyntaxError(LoopErrorMessage(loopStack.back()));
             }
         }
 
@@ -299,9 +325,9 @@ void Runtime::ValidateOrders()
         {
 
             addInfo(orders()[i]);
-            if (loopStack.top().type == LoopTypes::Do)
+            if (loopStack.back().type == LoopTypes::Do)
             {
-                orders()[i]->info->startLocation = loopStack.top().beginning;
+                orders()[i]->info->startLocation = loopStack.back().beginning;
             }
             else
             {
@@ -313,15 +339,15 @@ void Runtime::ValidateOrders()
         //begin-while-repeat loop
         if (orders()[i]->special == OperationType::Begin)
         {
-            loopStack.emplace(LoopTypes::While, i);
+            loopStack.emplace_back(LoopTypes::While, i);
             addInfo(orders()[i]);
         }
         // #TODO no validation for while loop right now
         if (orders()[i]->special == OperationType::While)
         {
-            if (loopStack.top().type == LoopTypes::While)
+            if (loopStack.back().type == LoopTypes::While)
             {
-                auto startLoop = loopStack.top().beginning;
+                auto startLoop = loopStack.back().beginning;
                 orders()[startLoop]->info->whileLocation = i;
             }
             else
@@ -337,10 +363,10 @@ void Runtime::ValidateOrders()
             {
                 throw SyntaxError("Expected Begin");
             }
-            if (loopStack.top().type == LoopTypes::While)
+            if (loopStack.back().type == LoopTypes::While)
             {
 
-                auto startLoop = loopStack.top().beginning;
+                auto startLoop = loopStack.back().beginning;
                 auto whilePosition = orders()[startLoop]->info->whileLocation;
                 if (whilePosition == -1)
                 {
@@ -353,18 +379,18 @@ void Runtime::ValidateOrders()
                 orders()[i]->validated = true;
                 addInfo(orders()[i]);
                 orders()[i]->info->startLocation = startLoop;
-                loopStack.pop();
+                loopStack.pop_back();
             }
             else
             {
-                throw SyntaxError(LoopErrorMessage(loopStack.top()));
+                throw SyntaxError(LoopErrorMessage(loopStack.back()));
             }
         }
 
         //Functions
         if (orders()[i]->special == OperationType::FunctionBegin)
         {
-            loopStack.emplace(LoopTypes::Definition, i);
+            loopStack.emplace_back(LoopTypes::Definition, i);
             addInfo(orders()[i]);
         }
         if (orders()[i]->special == OperationType::FunctionEnd)
@@ -373,12 +399,12 @@ void Runtime::ValidateOrders()
             {
                 throw SyntaxError("Expected Function");
             }
-            if (loopStack.top().type == LoopTypes::Definition)
+            if (loopStack.back().type == LoopTypes::Definition)
             {
-                auto startDefinition = loopStack.top().beginning;
+                auto startDefinition = loopStack.back().beginning;
                 orders()[startDefinition]->info->endLocation = i;
                 orders()[startDefinition]->info->startLocation = startDefinition;
-                loopStack.pop();
+                loopStack.pop_back();
 
                 for (size_t j = startDefinition + 1; j < i; j++)
                 {
@@ -387,46 +413,46 @@ void Runtime::ValidateOrders()
             }
             else
             {
-                throw SyntaxError(LoopErrorMessage(loopStack.top()));
+                throw SyntaxError(LoopErrorMessage(loopStack.back()));
             }
         }
 
     }
     if (!loopStack.empty())
     {
-        throw SyntaxError(LoopErrorMessage(loopStack.top()));
+        throw SyntaxError(LoopErrorMessage(loopStack.back()));
     }
 
-    size_t currentThen = -1;
-    //check and assign else statements
-    for (int i = 0; i < orders().size(); i++)
-    {
-        if (orders()[i]->special == OperationType::Else)
-        {
-            size_t ifLocation = -1;
-            for (size_t j = i; j != 0; j--)
-            {
-                if (orders()[j]->special == OperationType::If)
-                {
-                    ifLocation = j;
-                }
-                if (orders()[j]->special == OperationType::Then)
-                {
-                    ifLocation = -1;
-                }
-            }
-            if (ifLocation == -1)
-            {
-                throw SyntaxError(std::format("Else statement at position: {} outside an if statement", i));
-            }
-            if (orders()[ifLocation]->info->elseLocation != -1)
-            {
-                throw SyntaxError(std::format("Else statement at position: {} is inside an if statement that already has an else statement", i));
-            }
-            orders()[ifLocation]->info->elseLocation = i;
+    //size_t currentThen = -1;
+    ////check and assign else statements
+    //for (int i = 0; i < orders().size(); i++)
+    //{
+    //    if (orders()[i]->special == OperationType::Else)
+    //    {
+    //        size_t ifLocation = -1;
+    //        for (size_t j = i; j != 0; j--)
+    //        {
+    //            if (orders()[j]->special == OperationType::If)
+    //            {
+    //                ifLocation = j;
+    //            }
+    //            if (orders()[j]->special == OperationType::Then)
+    //            {
+    //                ifLocation = -1;
+    //            }
+    //        }
+    //        if (ifLocation == -1)
+    //        {
+    //            throw SyntaxError(std::format("Else statement at position: {} outside an if statement", i));
+    //        }
+    //        if (orders()[ifLocation]->info->elseLocation != -1)
+    //        {
+    //            throw SyntaxError(std::format("Else statement at position: {} is inside an if statement that already has an else statement", i));
+    //        }
+    //        orders()[ifLocation]->info->elseLocation = i;
 
-            addInfo(orders()[i]);
-            orders()[i]->info->endLocation = orders()[ifLocation]->info->endLocation;
-        }
-    }
+    //        addInfo(orders()[i]);
+    //        orders()[i]->info->endLocation = orders()[ifLocation]->info->endLocation;
+    //    }
+    //}
 }
