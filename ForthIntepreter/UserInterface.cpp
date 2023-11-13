@@ -31,7 +31,7 @@ void ConsoleInterface::PrintStack(std::stack<StackNumber> stack)
 
 void ConsoleInterface::PrintStackNumber(StackNumber variable)
 {
-    std::cout << variable.variable;
+    std::cout << variable.variable << " ";
 }
 
 void ConsoleInterface::PrintAscii(StackNumber variable)
